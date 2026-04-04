@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZKVerify - Privacy-Preserving Age Verification</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="bg-orb bg-orb-a"></div>
+  <div class="bg-orb bg-orb-b"></div>
+
+  <div class="page-shell">
+    <header class="top-bar reveal">
+      <div class="brand-lockup">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <strong>ZKVerify</strong>
+      </div>
+      <div class="trust-pill">Built with Zero Knowledge Cryptography</div>
+    </header>
+
+    <section class="hero reveal reveal-delay-1">
+      <h1>Verify age. Reveal nothing.</h1>
+      <p>
+        Cryptographically prove a user is above a legal age threshold using Aadhaar QR code data,
+        without exposing name, address, or Aadhaar number.
+      </p>
+    </section>
+
+    <main class="reveal reveal-delay-2">
+      <section id="verificationCard" class="verification-card" data-state="input">
+        <div id="inputState" class="card-state">
+          <h2>Age Verification</h2>
+
+          <div class="qr-option-row">
+            <button id="scanQrBtn" class="secondary-action" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4v2H7v2H5V4zm10 0h4v4h-2V6h-2V4zM5 16h2v2h2v2H5v-4zm12 2h-2v2h4v-4h-2v2zM8 8h8v8H8V8zm2 2v4h4v-4h-4z"/></svg>
+              Scan QR Code
+            </button>
+            <button id="togglePasteBtn" class="ghost-action" type="button">Paste QR Data</button>
+          </div>
+
+          <div id="scannerPanel" class="panel" hidden>
+            <div id="scannerViewport" class="scanner-viewport"></div>
+            <p class="help-text">Point the camera at the Aadhaar QR code.</p>
+            <button id="stopScanBtn" class="ghost-action" type="button">Stop scanning</button>
+          </div>
+
+          <div id="pastePanel" class="panel" hidden>
+            <label for="qrInput" class="field-label">QR Data</label>
+            <textarea id="qrInput" placeholder="Paste your Aadhaar Secure QR data here..."></textarea>
+            <p id="qrValidation" class="validation-text" hidden>Please scan or paste QR data</p>
+          </div>
+
+          <div class="field-group">
+            <label for="expectedNameInput" class="field-label">Expected full name</label>
+            <input id="expectedNameInput" type="text" placeholder="Enter expected Aadhaar name" autocomplete="name" />
+            <p class="help-text">Proof generation succeeds only if this name matches the signed Aadhaar name.</p>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Minimum age to prove</label>
+            <div class="pill-row" id="agePills">
+              <button class="age-pill is-active" type="button" data-age="18">18+</button>
+              <button class="age-pill" type="button" data-age="21">21+</button>
+              <button class="age-pill" type="button" data-age="25">25+</button>
+              <button id="customAgeToggle" class="age-pill" type="button" data-age="custom">Custom</button>
+            </div>
+            <div id="customAgePanel" hidden>
+              <label for="minAgeInput" class="field-label">Custom minimum age</label>
+              <input id="minAgeInput" type="number" min="1" max="120" step="1" value="18" />
+            </div>
+          </div>
+
+          <details class="advanced-settings">
+            <summary>Advanced settings</summary>
+            <label for="provingMode" class="field-label">Proof generation mode</label>
+            <select id="provingMode">
+              <option value="local" selected>Local (in browser)</option>
+              <option value="server">Server-side</option>
+            </select>
+            <p>Proof keys are loaded from the server endpoint configured for this deployment.</p>
+          </details>
+
+          <button id="generateBtn" class="primary-action" type="button">Generate Zero-Knowledge Proof</button>
+          <p id="inputHint" class="privacy-note">Your data is processed entirely in your browser.</p>
+        </div>
+
+        <div id="provingState" class="card-state" hidden>
+          <div class="progress-ring-wrap">
+            <svg class="progress-ring" viewBox="0 0 160 160" aria-hidden="true">
+              <circle class="progress-ring-track" cx="80" cy="80" r="68"></circle>
+              <circle id="progressRingBar" class="progress-ring-bar" cx="80" cy="80" r="68"></circle>
+            </svg>
+            <div class="progress-center">
+              <span id="progressPercent">0%</span>
+              <small id="elapsedTime">0s</small>
+            </div>
+          </div>
+          <h3 id="provingMessage">Preparing secure proof generation...</h3>
+          <p id="provingDetail" class="help-text">This usually takes around one minute on desktop browsers.</p>
+          <p class="privacy-note">Your data never leaves this browser. Proof generation runs on your device.</p>
+        </div>
+
+        <div id="resultState" class="card-state" hidden>
+          <div class="success-mark" aria-hidden="true">
+            <svg viewBox="0 0 72 72">
+              <circle cx="36" cy="36" r="34"></circle>
+              <path d="M20 38l11 11 21-23"></path>
+            </svg>
+          </div>
+          <h3 id="resultHeadline">Age >= 18: Verified | Identity: Bound</h3>
+
+          <details class="proof-details" open>
+            <summary>Proof details</summary>
+            <div class="detail-grid">
+              <div><span>Proof generation time</span><strong id="proofTimeValue">-</strong></div>
+              <div><span>Proof size</span><strong id="proofSizeValue">-</strong></div>
+              <div><span>Verification time</span><strong id="verifyTimeValue">-</strong></div>
+              <div><span>Circuit</span><strong>Groth16 on BN128</strong></div>
+              <div class="proof-hash-row">
+                <span>Proof hash</span>
+                <div class="copy-row">
+                  <strong id="proofHashValue">-</strong>
+                  <button id="copyHashBtn" class="ghost-action" type="button">Copy</button>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <section class="reveal-grid">
+            <h4>What was revealed?</h4>
+            <div class="reveal-columns">
+              <div class="reveal-col redacted">
+                <h5>Your Aadhaar data</h5>
+                <p>Name: <span>████████</span></p>
+                <p>DOB: <span>████████</span></p>
+                <p>Address: <span>████████</span></p>
+                <p>Aadhaar No: <span>████████</span></p>
+              </div>
+              <div class="reveal-col clean">
+                <h5>What the verifier learned</h5>
+                <p id="revealedAgeRow">Age >= 18: Yes</p>
+                <p>Name matches expected: Yes (via ZK)</p>
+                <p>Address: Nothing</p>
+                <p>Aadhaar No: Nothing</p>
+              </div>
+            </div>
+          </section>
+
+          <button id="verifyAgainBtn" class="secondary-action" type="button">Verify Again</button>
+        </div>
+
+        <div id="errorState" class="card-state" hidden>
+          <div class="error-mark" aria-hidden="true">
+            <svg viewBox="0 0 72 72">
+              <circle cx="36" cy="36" r="34"></circle>
+              <path d="M25 25l22 22"></path>
+              <path d="M47 25L25 47"></path>
+            </svg>
+          </div>
+          <h3>Verification failed</h3>
+          <p id="errorMessage" class="error-copy">Your device may not have enough memory. Try on a desktop browser.</p>
+          <button id="tryAgainBtn" class="secondary-action" type="button">Try Again</button>
+        </div>
+      </section>
+    </main>
+
+    <section class="how-it-works reveal reveal-delay-3">
+      <h2>How It Works</h2>
+      <div class="how-grid">
+        <article>
+          <div class="icon-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a2 2 0 012 2v16a2 2 0 01-2 2H7a2 2 0 01-2-2V4a2 2 0 012-2zm0 2v16h10V4H7zm2 12h6v2H9v-2z"/></svg>
+          </div>
+          <h3>Scan</h3>
+          <p>User scans Aadhaar QR code data in the browser.</p>
+        </article>
+        <article>
+          <div class="icon-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l4 4h-3v6H11V6H8l4-4zm-7 9h4v2H7v5h10v-5h-2v-2h4v9H5v-9z"/></svg>
+          </div>
+          <h3>Prove</h3>
+          <p>A zero-knowledge proof is generated entirely on-device.</p>
+        </article>
+        <article>
+          <div class="icon-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4 1.4 1.4L11 17 7.6 13.6 9 12zm3-10l8 4v6c0 5.5-3.8 10.7-8 12-4.2-1.3-8-6.5-8-12V6l8-4z"/></svg>
+          </div>
+          <h3>Verify</h3>
+          <p>The verifier learns only that age is above the threshold.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="dev-section reveal reveal-delay-4">
+      <h2>For Developers</h2>
+      <p>Embed age checks in your onboarding flow with one SDK call.</p>
+      <pre><code>&lt;script src="https://zkage.in/sdk.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  ZKAge.verify({ minAge: 18 })
+    .then(result =&gt; {
+      // result.valid === true
+      // result.eligible === true
+      // No personal data was exposed
+    });
+&lt;/script&gt;</code></pre>
+    </section>
+
+    <footer class="site-footer reveal reveal-delay-4">
+      <p>Built in India. Privacy-first identity infrastructure.</p>
+      <a href="https://github.com" target="_blank" rel="noreferrer">GitHub</a>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast" hidden>Proof copied!</div>
+
+  <script src="/vendor/pako/pako.min.js"></script>
+  <script src="/vendor/jsqr/jsQR.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

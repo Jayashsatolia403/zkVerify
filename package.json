@@ -1,0 +1,45 @@
+{
+  "name": "zkverify-poc",
+  "version": "0.1.0",
+  "description": "ZK-Verify POC - Age verification using zero-knowledge proofs",
+  "type": "module",
+  "scripts": {
+    "compile:circuit": "node scripts/compile-circuit.js",
+    "compile:circuit:mobile": "node scripts/compile-circuit.js --profile browser-prod --maxDataLength 1280",
+    "compile:circuit:fast": "node scripts/compile-circuit.js --profile browser-prod --maxDataLength 1280",
+    "compile:circuit:balanced": "node scripts/compile-circuit.js --profile browser-prod --maxDataLength 1280",
+    "compile:circuit:dev": "node scripts/compile-circuit.js --profile dev --maxDataLength 2048",
+    "setup:ceremony": "node scripts/trusted-setup.js",
+    "generate:proof": "node scripts/generate-and-verify-proof.js",
+    "verify:proof": "node scripts/generate-and-verify-proof.js",
+    "test:qr": "node scripts/generate-and-verify-proof.js",
+    "test:poc": "node test/poc-test.js",
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "@pcd/pcd-types": "^0.15.0",
+    "@zk-email/circuits": "^6.3.4",
+    "@zk-email/helpers": "^6.4.2",
+    "body-parser": "^2.2.2",
+    "circomlibjs": "^0.1.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "json-bigint": "^1.0.0",
+    "jsqr": "^1.4.0",
+    "node-forge": "^1.3.1",
+    "pako": "^2.1.0",
+    "snarkjs": "^0.7.0",
+    "uuid": "^11.1.0",
+    "zbar": "^0.0.4"
+  },
+  "devDependencies": {
+    "circom_tester": "^0.0.19",
+    "jimp": "^1.6.0",
+    "qrcode-reader": "^1.0.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

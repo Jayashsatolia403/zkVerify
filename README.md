@@ -4,6 +4,21 @@
 
 ZK-Verify lets any developer verify identity claims against UIDAI-signed Aadhaar data — without ever seeing the underlying document. The verifier gets a cryptographic guarantee. Zero personal data is exposed, transmitted, or stored.
 
+## Quick Start (Browser Demo)
+
+Run the API server, then open the built-in browser page:
+
+```bash
+npm install
+npm start
+```
+
+Open `http://localhost:3000/`, paste the Aadhaar QR numeric payload, choose the key set, and click **Generate Proof and Verify**.
+
+- Proof is generated client-side in the browser using `snarkjs.groth16.fullProve`
+- Only `proof` + `publicSignals` are sent to `POST /api/verify`
+- Verification response is shown directly in the page
+
 ## The Problem
 
 Every company doing KYC in India collects full Aadhaar documents — name, number, address, photo — and stores all of it. India's Digital Personal Data Protection Act (2023) mandates data minimization, but there's no technical infrastructure to verify identity claims without over-collecting data.
